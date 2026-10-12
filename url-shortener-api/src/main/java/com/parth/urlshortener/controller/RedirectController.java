@@ -28,7 +28,8 @@ public class RedirectController {
                         new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         // increase click count
-        url.setClickCount(url.getClickCount() + 1);
+        long currentClicks = url.getClickCount() != null ? url.getClickCount() : 0L;
+        url.setClickCount(currentClicks + 1);
         repository.save(url);
 
         // redirect to original URL

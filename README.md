@@ -8,14 +8,14 @@ This repository contains two Spring Boot URL shortener implementations:
 
 ```
 url_shortner/
-├── url-shortener-api/       # Implementation 1: Spring Boot REST API with Swagger & Redis/DB caching
-└── url-shortner-api-2/      # Implementation 2: Spring Boot URL shortener with Frontend UI
+├── url-shortener-api/       # Implementation 1: Spring Boot REST API with Swagger 
+└── url-shortner-api-2/      # Implementation 2: Spring Boot URL shortener 
 ```
 
 ---
 
 ## 1. `url-shortener-api`
-- **Tech Stack**: Java, Spring Boot, Spring Data JPA, Swagger / OpenAPI
+- **Tech Stack**: Java, Spring Boot, Spring Data MongoDB, Swagger
 - **Features**: RESTful API endpoints to encode/decode URLs, track clicks, and swagger documentation.
 - **Run**:
   ```bash

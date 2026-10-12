@@ -1,6 +1,6 @@
 # 🔗 URL Shortener API
 
-**Java • Spring Boot • REST API • JPA • H2 Database • Swagger UI**
+**Java • Spring Boot • REST API • Spring Data MongoDB • Swagger UI**
 
 ---
 
@@ -8,7 +8,7 @@
 
 A production-style URL Shortener built using **Spring Boot** that converts long URLs into compact, shareable links.
 
-The application generates unique short codes using **Base62 encoding**, stores mappings in an **H2 database**, and redirects users to the original destination while maintaining a clean layered architecture.
+The application generates unique short codes using **Base62 encoding**, stores mappings in a **MongoDB database**, and redirects users to the original destination while maintaining a clean layered architecture.
 
 It also includes an intuitive frontend interface and complete API documentation using **Swagger UI**.
 
@@ -18,7 +18,7 @@ It also includes an intuitive frontend interface and complete API documentation 
 
 Long URLs are difficult to share, remember, and manage.
 
-This project demonstrates how backend development concepts such as REST APIs, database persistence, layered architecture, and URL redirection can be combined to build a practical real-world application similar to Bit.ly or TinyURL.
+This project demonstrates how backend development concepts such as REST APIs, NoSQL document persistence, layered architecture, and URL redirection can be combined to build a practical real-world application similar to Bit.ly or TinyURL.
 
 ---
 
@@ -28,7 +28,7 @@ This project demonstrates how backend development concepts such as REST APIs, da
 * 🚀 Instant URL redirection
 * 🎨 Responsive Frontend Interface
 * 📚 Interactive Swagger API Documentation
-* 💾 H2 In-Memory Database
+* 🍃 MongoDB Document Database
 * 🏗️ Layered Spring Boot Architecture
 * 🔄 RESTful API Design
 * 🔑 Base62 Short Code Generation
@@ -52,7 +52,7 @@ Spring Boot REST API
 Generate Base62 Short Code
      │
      ▼
-Store URL Mapping (H2 Database)
+Store URL Mapping (MongoDB)
      │
      ▼
 Return Short URL

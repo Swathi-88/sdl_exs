@@ -13,23 +13,19 @@ public class UrlService {
     private final ShortUrlRepository repository;
 
     public ShortUrl createShortUrl(String originalUrl) {
+        // Step 1: generate unique short code
+        String code = Base62Encoder.generateRandomCode(7);
+        while (repository.findByShortCode(code).isPresent()) {
+            code = Base62Encoder.generateRandomCode(7);
+        }
 
-        // Step 1: create object
+        // Step 2: create and save document in MongoDB
         ShortUrl url = ShortUrl.builder()
                 .originalUrl(originalUrl)
+                .shortCode(code)
                 .clickCount(0L)
                 .build();
 
-        // Step 2: save to DB to get ID
-        ShortUrl saved = repository.save(url);
-
-        // Step 3: generate short code
-        String code = Base62Encoder.encode(saved.getId());
-
-        // Step 4: set short code
-        saved.setShortCode(code);
-
-        // Step 5: save again
-        return repository.save(saved);
+        return repository.save(url);
     }
 }

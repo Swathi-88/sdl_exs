@@ -1,9 +1,11 @@
 package com.parth.urlshortener.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document(collection = "short_urls")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,11 +14,11 @@ import lombok.*;
 public class ShortUrl {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private String originalUrl;
 
+    @Indexed(unique = true)
     private String shortCode;
 
     private Long clickCount;
