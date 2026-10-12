@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener • Redis Cache Latency Benchmark</title>
+    <meta name="description" content="High performance URL Shortener with real-time Redis Cache vs MongoDB latency comparison.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="ambient-glow glow-1"></div>
+<div class="ambient-glow glow-2"></div>
+
+<div class="app-layout">
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-badge">
+            <span class="pulse-dot"></span>
+            Redis In-Memory Cache Performance Benchmark
+        </div>
+        <h1 class="title">
+            <span>URL Shortener</span>
+            <span class="gradient-text">Latency Analyzer</span>
+        </h1>
+        <p class="subtitle">
+            Experience the real-time performance contrast between in-memory Redis caching and traditional MongoDB queries.
+        </p>
+
+        <!-- System Architecture Pill Status -->
+        <div class="status-bar">
+            <div class="status-pill">
+                <span class="status-indicator online"></span>
+                <span>MongoDB: <strong class="pill-highlight">Port 27017</strong></span>
+            </div>
+            <div class="status-pill">
+                <span class="status-indicator online-redis"></span>
+                <span>Redis Cache: <strong class="pill-highlight">Port 6379</strong></span>
+            </div>
+            <div class="status-pill">
+                <span class="status-indicator"></span>
+                <span>Strategy: <strong class="pill-highlight">Cache-Aside</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+        <!-- Card 1: URL Creation -->
+        <section class="card glass-panel" id="createSection">
+            <div class="card-header">
+                <div class="card-icon">🔗</div>
+                <div>
+                    <h2>Create Short Link</h2>
+                    <p class="card-desc">Generate a compact Base62 short URL to benchmark</p>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    <input 
+                        type="url" 
+                        id="urlInput" 
+                        placeholder="Enter long URL (e.g., https://github.com/parthmandore/url-shortener-api)" 
+                        value="https://en.wikipedia.org/wiki/In-memory_database"
+                        autocomplete="off"
+                    >
+                </div>
+                <button id="shortenBtn" class="btn btn-primary">
+                    <span>Shorten URL</span>
+                    <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Result Box -->
+            <div id="resultBox" class="result-box hidden">
+                <div class="result-details">
+                    <div class="result-label">Generated Short URL:</div>
+                    <div class="result-link-row">
+                        <input type="text" id="shortUrlDisplay" readonly>
+                        <button id="copyBtn" class="btn btn-secondary" title="Copy to clipboard">
+                            <span id="copyText">Copy</span>
+                        </button>
+                        <a id="visitBtn" href="#" target="_blank" class="btn btn-secondary" title="Open redirect in new tab">
+                            Visit ↗
+                        </a>
+                        <button id="quickBenchmarkBtn" class="btn btn-accent">
+                            ⚡ Benchmark This URL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card 2: Interactive Latency Benchmark -->
+        <section class="card glass-panel" id="benchmarkSection">
+            <div class="card-header flex-between">
+                <div class="flex-row gap-3">
+                    <div class="card-icon icon-speed">⚡</div>
+                    <div>
+                        <h2>Latency Benchmark Suite</h2>
+                        <p class="card-desc">Measure URL retrieval response time with vs without Redis</p>
+                    </div>
+                </div>
+
+                <div class="action-btn-group">
+                    <button id="evictCacheBtn" class="btn btn-outline-danger" title="Simulate cache-miss by purging shortCode from Redis">
+                        🧹 Evict Cache Key
+                    </button>
+                    <button id="runBenchmarkBtn" class="btn btn-glow">
+                        <span id="runBenchmarkIcon">▶</span>
+                        <span id="runBenchmarkText">Run Live Comparison</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Target Code Info -->
+            <div class="target-bar">
+                <span>Testing Short Code: <code id="activeShortCode" class="code-badge">--</code></span>
+                <span class="text-muted">Target Long URL: <span id="activeLongUrl" class="text-truncate">Create or select a URL above</span></span>
+            </div>
+
+            <!-- Side-by-Side Comparison Grid -->
+            <div class="benchmark-grid">
+                
+                <!-- Box A: Without Redis -->
+                <div class="metric-card metric-db" id="dbMetricCard">
+                    <div class="metric-badge badge-db">
+                        <span>🍃 Without Redis</span>
+                        <span class="sub-badge">MongoDB Direct</span>
+                    </div>
+
+                    <div class="metric-body">
+                        <div class="metric-number-wrapper">
+                            <span class="metric-number" id="noRedisLatency">--</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-label">Average Response Time</div>
+
+                        <div class="progress-track">
+                            <div class="progress-fill fill-db" id="noRedisBar" style="width: 0%;"></div>
+                        </div>
+
+                        <ul class="spec-list">
+                            <li>
+                                <span class="spec-key">Storage Source:</span>
+                                <span class="spec-val">MongoDB Disk/BSON</span>
+                            </li>
+                            <li>
+                                <span class="spec-key">Database Reads:</span>
+                                <span class="spec-val text-warning">1 Read / Request</span>
+                            </li>
+                            <li>
+                                <span class="spec-key">Network Hop:</span>
+                                <span class="spec-val">Full TCP + Query Parser</span>
+                            </li>
+                            <li>
+                                <span class="spec-key">Cache Status:</span>
+                                <span class="spec-val status-tag tag-bypass">BYPASSED</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button id="testDbOnlyBtn" class="btn btn-sm btn-ghost">
+                        Test Without Redis (Direct DB)
+                    </button>
+                </div>
+
+                <!-- Box B: With Redis -->
+                <div class="metric-card metric-redis" id="redisMetricCard">
+                    <div class="metric-badge badge-redis">
+                        <span>⚡ With Redis</span>
+                        <span class="sub-badge">In-Memory Cache</span>
+                    </div>
+
+                    <div class="metric-body">
+                        <div class="metric-number-wrapper">
+                            <span class="metric-number" id="redisLatency">--</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-label">Average Response Time</div>
+
+                        <div class="progress-track">
+                            <div class="progress-fill fill-redis" id="redisBar" style="width: 0%;"></div>
+                        </div>
+
+                        <ul class="spec-list">
+                            <li>
+                                <span class="spec-key">Storage Source:</span>
+                                <span class="spec-val text-accent">Redis RAM (O(1))</span>
+                            </li>
+                            <li>
+                                <span class="spec-key">Database Reads:</span>
+                                <span class="spec-val text-success">0 Reads (Eliminated)</span>
+                            </li>
+                            <li>
+                                <span class="spec-key">Network Hop:</span>
+                                <span class="spec-val">Ultra-fast In-Memory Socket</span>
+                            </li>
+                            <li>
+                                <span class="spec-key">Cache Status:</span>
+                                <span class="spec-val status-tag tag-hit" id="redisStatusTag">CACHE HIT</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button id="testRedisOnlyBtn" class="btn btn-sm btn-ghost">
+                        Test With Redis (Cache Aside)
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Comparison Insights Banner -->
+            <div class="insight-banner" id="insightBanner">
+                <div class="insight-stats">
+                    <div class="insight-item">
+                        <div class="insight-value text-accent" id="speedupValue">--x</div>
+                        <div class="insight-title">Speed Improvement</div>
+                    </div>
+                    <div class="insight-divider"></div>
+                    <div class="insight-item">
+                        <div class="insight-value text-success" id="reductionValue">--%</div>
+                        <div class="insight-title">Latency Reduction</div>
+                    </div>
+                    <div class="insight-divider"></div>
+                    <div class="insight-item">
+                        <div class="insight-value" id="savedMsValue">-- ms</div>
+                        <div class="insight-title">Round-Trip Time Saved</div>
+                    </div>
+                    <div class="insight-divider"></div>
+                    <div class="insight-item">
+                        <div class="insight-value text-success">100%</div>
+                        <div class="insight-title">DB Read Load Eliminated</div>
+                    </div>
+                </div>
+
+                <div class="insight-text" id="insightSummary">
+                    Click <strong>Run Live Comparison</strong> to execute simultaneous requests against MongoDB and Redis.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Card 3: Execution Log & Benchmark History -->
+        <section class="card glass-panel" id="historySection">
+            <div class="card-header flex-between">
+                <div>
+                    <h2>Live Benchmark History</h2>
+                    <p class="card-desc">Detailed log of recent URL retrieval queries and timing</p>
+                </div>
+                <button id="clearLogsBtn" class="btn btn-sm btn-ghost">
+                    Clear Logs
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table class="benchmark-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Short Code</th>
+                            <th>Mode / Strategy</th>
+                            <th>Cache Status</th>
+                            <th>Latency</th>
+                            <th>DB Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr class="empty-row">
+                            <td colspan="6">No tests run yet. Shorten a URL and run a comparison above.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Spring Boot URL Shortener • Redis Cache-Aside Strategy • MongoDB Persistence</p>
+    </footer>
+
+</div>
+
+<!-- Toast notification container -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
