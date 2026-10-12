@@ -1,0 +1,25 @@
+# Compiled Java / Maven target directories
+target/
+**/target/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs & temp files
+*.log
+*.tmp
